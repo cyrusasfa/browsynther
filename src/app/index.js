@@ -4,6 +4,7 @@ import { Synth } from './tone';
 import { subscribeToTimer } from './api/subscribe';
 import Tone from 'tone';
 
+const transport = Tone.Transport;
 Tone.Transport.bpm.value = 120;
 Tone.Transport.start();
 
@@ -30,15 +31,16 @@ let sketch = (p5) => {
         this.y = y;
       }
 
-      mouseIsOver(color) {
+      mouseIsOver() {
         let mouseX = p5.mouseX;
         let mouseY = p5.mouseY;
         if (mouseX > this.x && mouseX < this.x + w && mouseY > this.y && mouseY < this.y + w ) {
           currentCell = this;
           if (!mouseLocked)  {
-            this.color = color;
+            this.color = disabledColor;
           } else {
             this.color = 0;
+            // synth.setLoopInterval(intervals[currentCell.y / w]);
           }
         } else {
           this.color = 255;
@@ -73,7 +75,7 @@ let sketch = (p5) => {
           p5.fill(grid[i][j].color)
           p5.stroke(209);
           p5.rect(i*w, j*w, w-1, w-1);
-          grid[i][j].mouseIsOver(disabledColor)
+          grid[i][j].mouseIsOver()
         }
       }
     }
