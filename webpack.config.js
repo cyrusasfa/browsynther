@@ -14,6 +14,8 @@ module.exports = {
   },
   devServer: {
     contentBase: 'src/public',
+    watchContentBase: true,
+    publicPath: 'src/public/js',
     port: 3000,
     historyApiFallback: true,
     proxy: {
