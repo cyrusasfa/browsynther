@@ -1,7 +1,15 @@
 import * as p5 from "p5/lib/p5.min"
 import './css/style.css';
-import {synth} from './tone';
+import { Synth } from './tone';
 import { subscribeToTimer } from './api/subscribe';
+import Tone from 'tone';
+
+Tone.Transport.bpm.value = 120;
+Tone.Transport.start();
+
+const synth = new Synth();
+
+const intervals = ['1n', '2n', '4n', '8n', '8t', '16n', '32n', '64n'];
 
 let sketch = (p5) => {
     var w;
@@ -40,7 +48,9 @@ let sketch = (p5) => {
 
      // p5.translate(window.innerWidth/2,window.innerHeight/2);
      p5.setup = () => {
-         p5.createCanvas(850, 420);
+         var cnv = p5.createCanvas(850, 420);
+         cnv.mousePressed(fillCurrentCell);
+         cnv.mouseReleased(unfillCurrentCell);
          w = 50;
          columns = 16;
          rows = 8;
@@ -68,25 +78,26 @@ let sketch = (p5) => {
       }
     }
 
-    p5.mousePressed = () => {
-      currentCell.color = 0;
-      mouseLocked = true;
+    p5.mouseDragged = () => {
+      synth.setLoopInterval(intervals[currentCell.y / w]);
     }
 
-    p5.mouseReleased = () => {
+    function fillCurrentCell() {
+      currentCell.color = 0;
+      mouseLocked = true;
+      synth.start(intervals[currentCell.y / w]);
+    }
+
+    function unfillCurrentCell() {
       mouseLocked = false;
       currentCell.color = disabledColor;
+      synth.stop();
     }
 
 }
 const P5 = new p5(sketch);
 
 subscribeToTimer((err, timestamp) => {
-  console.log(timestamp);
   var messageDiv = document.getElementById('message');
   messageDiv.innerHTML = timestamp;
-});
-
-document.getElementById('note').addEventListener('click', function(e) {
-    synth.triggerAttackRelease('C4', '8n')
 });

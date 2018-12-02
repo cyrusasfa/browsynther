@@ -6,8 +6,14 @@ var BUILD_DIR = path.resolve(__dirname, 'src/public');
 var APP_DIR = path.resolve(__dirname, 'src/app');
 
 module.exports = {
+  mode: 'development',
   context: __dirname + "/src",
-  entry: APP_DIR + '/index.js',
+  entry: {
+    index: [
+        "webpack-hot-middleware/client?path=/__webpack_hmr&timeout=20000",
+        APP_DIR + '/index.js',
+    ]
+  },
   output: {
     path: BUILD_DIR,
     filename: 'js/bundle.js'
@@ -45,5 +51,8 @@ module.exports = {
       },
 
     ]
-  }
+  },
+  plugins: [
+    new webpack.HotModuleReplacementPlugin()
+  ]
 };

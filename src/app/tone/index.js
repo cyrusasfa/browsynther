@@ -1,3 +1,4 @@
-import {synth} from './synth';
+import { Synth } from './synth'
+import {createFMSynth} from './FMSynth'
 
-export {synth};
+export {Synth, createFMSynth};
