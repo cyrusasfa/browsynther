@@ -16,8 +16,9 @@ module.exports = {
     contentBase: 'src/public',
     watchContentBase: true,
     publicPath: 'src/public/js',
+    inline:true,
+    hot: true,
     port: 3000,
-    historyApiFallback: true,
     proxy: {
       "/api/*":{
           target:"http://localhost:5000/",

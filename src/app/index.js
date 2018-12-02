@@ -1,4 +1,7 @@
 import * as p5 from "p5/lib/p5.min"
+import './css/style.css';
+import {synth} from './tone';
+import { subscribeToTimer } from './api/subscribe';
 
 let sketch = (p5) => {
     var w;
@@ -7,7 +10,7 @@ let sketch = (p5) => {
     var grid;
     var next;
     var currentCell;
-    var locked;
+    var mouseLocked;
 
     const disabledColor = 209;
 
@@ -24,7 +27,7 @@ let sketch = (p5) => {
         let mouseY = p5.mouseY;
         if (mouseX > this.x && mouseX < this.x + w && mouseY > this.y && mouseY < this.y + w ) {
           currentCell = this;
-          if (!locked)  {
+          if (!mouseLocked)  {
             this.color = color;
           } else {
             this.color = 0;
@@ -67,13 +70,23 @@ let sketch = (p5) => {
 
     p5.mousePressed = () => {
       currentCell.color = 0;
-      locked = true;
+      mouseLocked = true;
     }
 
     p5.mouseReleased = () => {
-      locked = false;
+      mouseLocked = false;
       currentCell.color = disabledColor;
     }
 
 }
 const P5 = new p5(sketch);
+
+subscribeToTimer((err, timestamp) => {
+  console.log(timestamp);
+  var messageDiv = document.getElementById('message');
+  messageDiv.innerHTML = timestamp;
+});
+
+document.getElementById('note').addEventListener('click', function(e) {
+    synth.triggerAttackRelease('C4', '8n')
+});
