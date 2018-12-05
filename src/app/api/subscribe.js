@@ -1,11 +1,11 @@
 import openSocket from 'socket.io-client';
 const socket = openSocket('http://localhost:5000');
 
-function subscribeToTimer(cb) {
+function subscribe(cb, color) {
   socket.on('timer', timestamp => {
     cb(null, timestamp)
   });
-  socket.emit('subscribe', 1000);
+  socket.emit('subscribe', color);
 }
 
-export { subscribeToTimer };
+export { subscribe };

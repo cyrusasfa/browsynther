@@ -1,7 +1,7 @@
 import * as p5 from "p5/lib/p5.min"
 import './css/style.css';
-import { Synth } from './tone';
-import { subscribeToTimer } from './api/subscribe';
+import { Synth, Noise } from './tone';
+import { subscribe } from './api/subscribe';
 import Tone from 'tone';
 var randomColor = require('randomcolor'); // import the script
 var userColor = randomColor(); // a hex code for an attractive color
@@ -44,10 +44,10 @@ let sketch = (p5) => {
             this.color = disabledColor;
           } else {
             if (prevCell != currentCell) {
+              // synth.start(cMinor[currentCell.x / w], ((currentCell.y / w) + 1) * 0.2);
               synth.start(cMinor[currentCell.x / w], intervals[currentCell.y / w]);
             }
             this.color = userColor;
-            // synth.setLoopInterval(intervals[currentCell.y / w]);
           }
         } else {
           this.color = 255;
@@ -55,7 +55,6 @@ let sketch = (p5) => {
       }
     }
 
-     // p5.translate(window.innerWidth/2,window.innerHeight/2);
      p5.setup = () => {
          var cnv = p5.createCanvas(850, 420);
          cnv.mousePressed(fillCurrentCell);
@@ -90,6 +89,7 @@ let sketch = (p5) => {
     function fillCurrentCell() {
       currentCell.color = 0;
       mouseLocked = true;
+      // synth.start(cMinor[currentCell.x / w], ((currentCell.y / w) + 1) * 0.2);
       synth.start(cMinor[currentCell.x / w], intervals[currentCell.y / w]);
     }
 
@@ -102,7 +102,7 @@ let sketch = (p5) => {
 }
 const P5 = new p5(sketch);
 
-subscribeToTimer((err, timestamp) => {
+subscribe((err, timestamp) => {
   var messageDiv = document.getElementById('message');
   messageDiv.innerHTML = timestamp;
-});
+}, userColor);

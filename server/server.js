@@ -24,18 +24,16 @@ io.on('connection', function(client) {
   console.log('a user connected');
   console.log(client.id);
 
-  client.on('subscribe', (interval) => {
-    console.log('client is subscribing to timer with interval ', interval);
-    setInterval(() => {
-      client.emit('timer', new Date());
-    }, interval);
+  client.on('subscribe', (color) => {
+    console.log('client is subscribing to with color', color);
+    client.color = color;
+    client.emit('timer', color);
   });
 
   client.on("message-from-browser", function (obj) {
    console.log(JSON.stringify(obj));
    echoInput(`${obj.message} back at you from the server`);
   });
-
 
   client.on('disconnect', () => {
     console.log('user disconnected')

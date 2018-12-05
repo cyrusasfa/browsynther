@@ -28,27 +28,49 @@ export class Synth {
         }
     };
 
-    synth.set(synthJSON);
+    // create delay
+    this.effect = new Tone.PingPongDelay();
+    let delayJson = {
+    	"delayTime" : "8n",
+    	"feedback" : 0.6,
+        "wet": 0.5
+    };
+    this.effect.set(delayJson);
 
-    this.synth = synth.connect(gain);
-    self = this;
+    // make connections
+    synth.set(synthJSON);
+    synth.connect(this.effect);
+    this.effect.connect(Tone.Master);
+    this.effect = synth.connect(gain);
+
+    this.repeatCallback = function(time){
+      let note = self.parameter;
+    	self.synth.triggerAttackRelease(self.note, '16n');
+    };
     this.eventId = -1;
-    // this.loop = new Tone.Loop(function(time){
-    //     self.synth.triggerAttackRelease('C4', '8n')
-    //   }, "16n");
   }
 
-  start(note, interval) {
-    // this.loop.interval = interval;
-    // this.loop.start(0);
+  start(parameter, interval) {
     self = this;
     this.stop();
-    this.eventId = Tone.Transport.scheduleRepeat(function(time){
-    	self.synth.triggerAttackRelease(note, '16n');
-    }, interval);
+    this.parameter = parameter;
+    
+    this.eventId = Tone.Transport.scheduleRepeat(this.repeatCallback, interval);
   }
 
   stop() {
     Tone.Transport.clear(this.eventId);
+  }
+
+  // define deep dispose function
+  deep_dispose() {
+      if(this.effect != undefined && this.effect != null) {
+          this.effect.dispose();
+          this.effect = null;
+      }
+      if(this.synth != undefined && this.synth != null) {
+          this.delay.dispose();
+          this.delay = null;
+      }
   }
 }
