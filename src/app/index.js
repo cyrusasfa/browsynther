@@ -11,6 +11,7 @@ Tone.Transport.start();
 const synth = new Synth();
 
 const intervals = ['1n', '2n', '4n', '8n', '8t', '16n', '32n', '64n'];
+const cMinor = ['C3', 'D3', 'Eb3', 'F3', 'G3', 'Ab3', 'Bb3', 'C4', 'D4', 'Eb4', 'F4', 'G4', 'Ab4', 'Bb4', 'C5']
 
 let sketch = (p5) => {
     var w;
@@ -35,10 +36,14 @@ let sketch = (p5) => {
         let mouseX = p5.mouseX;
         let mouseY = p5.mouseY;
         if (mouseX > this.x && mouseX < this.x + w && mouseY > this.y && mouseY < this.y + w ) {
+          let prevCell = currentCell;
           currentCell = this;
           if (!mouseLocked)  {
             this.color = disabledColor;
           } else {
+            if (prevCell != currentCell) {
+              synth.start(cMinor[currentCell.x / w], intervals[currentCell.y / w]);
+            }
             this.color = 0;
             // synth.setLoopInterval(intervals[currentCell.y / w]);
           }
@@ -54,7 +59,7 @@ let sketch = (p5) => {
          cnv.mousePressed(fillCurrentCell);
          cnv.mouseReleased(unfillCurrentCell);
          w = 50;
-         columns = 16;
+         columns = 15;
          rows = 8;
 
          grid = new Array(columns);
@@ -80,14 +85,10 @@ let sketch = (p5) => {
       }
     }
 
-    p5.mouseDragged = () => {
-      synth.setLoopInterval(intervals[currentCell.y / w]);
-    }
-
     function fillCurrentCell() {
       currentCell.color = 0;
       mouseLocked = true;
-      synth.start(intervals[currentCell.y / w]);
+      synth.start(cMinor[currentCell.x / w], intervals[currentCell.y / w]);
     }
 
     function unfillCurrentCell() {

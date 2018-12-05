@@ -32,21 +32,23 @@ export class Synth {
 
     this.synth = synth.connect(gain);
     self = this;
-    this.loop = new Tone.Loop(function(time){
-        self.synth.triggerAttackRelease('C4', '8n')
-      }, "16n");
+    this.eventId = -1;
+    // this.loop = new Tone.Loop(function(time){
+    //     self.synth.triggerAttackRelease('C4', '8n')
+    //   }, "16n");
   }
 
-  start(interval) {
-    this.loop.interval = interval;
-    this.loop.start(0);
-  }
-
-  setLoopInterval(interval) {
-    this.loop.interval = interval;
+  start(note, interval) {
+    // this.loop.interval = interval;
+    // this.loop.start(0);
+    self = this;
+    this.stop();
+    this.eventId = Tone.Transport.scheduleRepeat(function(time){
+    	self.synth.triggerAttackRelease(note, '16n');
+    }, interval);
   }
 
   stop() {
-    this.loop.stop();
+    Tone.Transport.clear(this.eventId);
   }
 }
