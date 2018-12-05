@@ -5,7 +5,7 @@ function subscribeToTimer(cb) {
   socket.on('timer', timestamp => {
     cb(null, timestamp)
   });
-  socket.emit('subscribe', 10000);
+  socket.emit('subscribe', 1000);
 }
 
 export { subscribeToTimer };

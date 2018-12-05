@@ -3,6 +3,8 @@ import './css/style.css';
 import { Synth } from './tone';
 import { subscribeToTimer } from './api/subscribe';
 import Tone from 'tone';
+var randomColor = require('randomcolor'); // import the script
+var userColor = randomColor(); // a hex code for an attractive color
 
 const transport = Tone.Transport;
 Tone.Transport.bpm.value = 120;
@@ -44,7 +46,7 @@ let sketch = (p5) => {
             if (prevCell != currentCell) {
               synth.start(cMinor[currentCell.x / w], intervals[currentCell.y / w]);
             }
-            this.color = 0;
+            this.color = userColor;
             // synth.setLoopInterval(intervals[currentCell.y / w]);
           }
         } else {
