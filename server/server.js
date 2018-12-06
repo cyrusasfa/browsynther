@@ -24,10 +24,10 @@ io.on('connection', function(client) {
   console.log('a user connected');
   console.log(client.id);
 
-  client.on('subscribe', (color) => {
-    console.log('client is subscribing to with color', color);
-    client.color = color;
-    client.emit('timer', color);
+  client.on('subscribe', (userState) => {
+    console.log('client is subscribing to with attributes', userState);
+    client.state = userState;
+    client.emit('timer', client.state);
   });
 
   client.on("message-from-browser", function (obj) {

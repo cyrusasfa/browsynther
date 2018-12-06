@@ -41,20 +41,21 @@ export class Synth {
     synth.set(synthJSON);
     synth.connect(this.effect);
     this.effect.connect(Tone.Master);
-    this.effect = synth.connect(gain);
+    this.synth = synth.connect(gain);
 
-    this.repeatCallback = function(time){
+    self = this;
+    this.repeatCallback = function(time) {
       let note = self.parameter;
-    	self.synth.triggerAttackRelease(self.note, '16n');
+    	self.synth.triggerAttackRelease(note, '16n');
     };
     this.eventId = -1;
   }
 
   start(parameter, interval) {
-    self = this;
     this.stop();
+
     this.parameter = parameter;
-    
+
     this.eventId = Tone.Transport.scheduleRepeat(this.repeatCallback, interval);
   }
 

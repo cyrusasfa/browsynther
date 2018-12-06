@@ -1,8 +1,7 @@
 import Tone from 'tone';
 
-import Synth from './synth'
+import {Synth} from './synth';
 
-'use strict'
 export class Noise extends Synth {
 
   constructor() {
@@ -40,8 +39,9 @@ export class Noise extends Synth {
     this.synth = synth.connect(gain);
 
     this.repeatCallback = function(time){
-      let decay = self.parameter
+      let decay = self.parameter;
       self.noiseSynth.triggerAttackRelease('16n', '4n');
     };
   }
 }
+export default Noise;
