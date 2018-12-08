@@ -6,7 +6,7 @@ export class Synth {
     if (skipConstructor) {
       return
     };
-    // const gain = new Tone.Gain(0.5).toMaster();
+    const gain = new Tone.Gain(0.5).toMaster();
     let synth = new Tone.FMSynth();
     var synthJSON = {
         "harmonicity":2,
@@ -44,9 +44,9 @@ export class Synth {
     synth.set(synthJSON);
     synth.connect(this.effect);
     this.effect.connect(Tone.Master);
-    this.synth = synth.connect(Tone.Master);
+    this.synth = synth.connect(gain);
 
-    self = this;
+    let self = this;
     this.repeatCallback = function(time) {
     	self.synth.triggerAttackRelease(self.note, '16n');
     };
@@ -55,7 +55,6 @@ export class Synth {
   start(note, interval, parameter) {
     this.stop();
     this.note = note;
-    console.log(parameter);
     this.parameter = parameter;
     this.eventId = Tone.Transport.scheduleRepeat(this.repeatCallback, interval);
   }

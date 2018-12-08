@@ -16,9 +16,8 @@ const toneSynths = {
   "synth": new Synth(),
   "noise": new Noise()
 };
-console.log(toneSynths);
 const users = []
-const thisUser = new User(randomColor(), synths.noise);
+const thisUser = new User(randomColor(), synths.synth);
 const state = new State(thisUser, scales.minor.c, users)
 
 let sketch = (p5) => {
@@ -56,7 +55,6 @@ let sketch = (p5) => {
             if (prevCell != currentCell) {
               // If mouse is held and moved to a new cell
               toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
-              console.log(toneSynths[state.thisUser.synth]);
             }
 
             // Mouse held on cell, set its color and update user position

@@ -7,7 +7,7 @@ export class Noise extends Synth {
 
   constructor() {
     super(true);
-    // const gain = new Tone.Gain(0.5).toMaster();
+    const gain = new Tone.Gain(0.5).toMaster();
     var noiseSynth = new Tone.MetalSynth();
     let synthJSON =  {
     	"frequency"  : 45 ,
@@ -38,10 +38,10 @@ export class Noise extends Synth {
     noiseSynth.set(synthJSON);
     noiseSynth.connect(this.chorus);
     this.chorus.connect(Tone.Master);
-    this.synth = noiseSynth.toMaster();
+    this.synth = noiseSynth.connect(gain);
 
-    self = this;
-    this.repeatCallback = function(time){
+    let self = this;
+    this.repeatCallback = function(time) {
       let decay = (self.parameter + 0.1) * 0.2;
       self.synth.set("envelope.decay", decay);
       self.synth.triggerAttackRelease('16n');
