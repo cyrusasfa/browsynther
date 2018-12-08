@@ -1,9 +1,13 @@
 import openSocket from 'socket.io-client';
 const socket = openSocket('http://localhost:5000');
 
-function subscribe(cb, user) {
+function subscribe(registerUser, removeUser, user) {
   socket.on('userUpdate', (userId, userState) => {
-    cb(null, userId, userState);
+    registerUser(null, userId, userState);
+  });
+  
+  socket.on('userDisconnect', userId => {
+    removeUser(null, userId)
   });
   socket.emit('update', user);
 }

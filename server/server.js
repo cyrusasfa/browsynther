@@ -29,6 +29,8 @@ io.on('connection', function(client) {
     console.log('client is updating with attributes', userState);
     client.state = userState;
 
+    // TODO : ADD ON/OFF STATE TO KNOW IF CURRENT CELL IS TRIGGERED
+
     for (let c of clients.filter(c => c.id !== client.id)) {
       c.emit('userUpdate', client.id, client.state);
     }

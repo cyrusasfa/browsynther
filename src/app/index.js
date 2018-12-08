@@ -63,8 +63,8 @@ let sketch = (p5) => {
             state.thisUser.setY(this.y);
 
             // Send updated user position to socket
+            sendSocketUpdate(state.thisUser);
           }
-          sendSocketUpdate(state.thisUser);
         } else {
           this.color = 255;
         }
@@ -125,7 +125,18 @@ let sketch = (p5) => {
 }
 const P5 = new p5(sketch);
 
-subscribe((err, userId, userState) => {
-  var messageDiv = document.getElementById('message');
-  messageDiv.innerHTML = `${userState.color} ${userState.synth} ${userState.x} ${userState.y}`;
-}, state.thisUser);
+// TODO: EXPORT THESE FROM AN EXTERNAL
+// Callback when socket notifies that there is a new user connected
+let registerNewUser = (err, userId, userState) => {
+  users[userId] = userState;
+  console.log(users);
+  if (userState.x != -1) {console.log(users[userId])};
+};
+
+// Remove a user from the list of clients when they disconnect from the socket.
+let removeUser = (err, userId) => {
+  delete users[userId];
+  console.log(users);
+};
+// Subscribe to socket and pass message callback functions and this user info
+subscribe(registerNewUser, removeUser, state.thisUser);
