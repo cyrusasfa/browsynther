@@ -1,3 +1,4 @@
-import User from './User.js'
+import User from './User.js';
+import State from './State.js'
 
-export { User };
+export { State, User };

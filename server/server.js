@@ -23,14 +23,13 @@ app.use(express.static(path.join(__dirname, '../src/public')));
 var clients = [];
 
 io.on('connection', function(client) {
-  console.log('a user connected');
-  console.log(client.id);
   clients.push(client);
 
   client.on('update', (userState) => {
     console.log('client is updating with attributes', userState);
     client.state = userState;
-    for (let c of clients) {
+
+    for (let c of clients.filter(c => c.id !== client.id)) {
       c.emit('userUpdate', client.id, client.state);
     }
   });
@@ -42,7 +41,11 @@ io.on('connection', function(client) {
 
   client.on('disconnect', () => {
     console.log('user disconnected')
-    clients.splice(clients.indexOf(client), 1);
+    clients = clients.filter(c => c.id !== client.id)
+    for (let c of clients) {
+      // Tell clients that a client has disconnected
+      c.emit('userDisconnect', client.id);
+    }
   });
 });
 

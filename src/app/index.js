@@ -1,9 +1,10 @@
 import * as p5 from "p5/lib/p5.min"
 import './css/style.css';
 import { Synth, Noise } from './tone';
+import {intervals, scales, synths} from './config';
 import { subscribe, sendSocketUpdate } from './api/subscribe';
 import Tone from 'tone';
-import {User} from './state';
+import {State, User} from './state';
 
 var randomColor = require('randomcolor'); // import the script
 
@@ -11,21 +12,14 @@ const transport = Tone.Transport;
 Tone.Transport.bpm.value = 120;
 Tone.Transport.start();
 
-const synths = {synth: "synth"}
-const synth =  new Synth();
-
-const thisUser = new User(randomColor(), "synth");
-
-const intervals = ['1n', '2n', '4n', '8n', '8t', '16n', '32n', '64n'];
-
-const scales = {
-  minor: {
-    c: ['C3', 'D3', 'Eb3', 'F3', 'G3', 'Ab3', 'Bb3', 'C4', 'D4', 'Eb4', 'F4', 'G4', 'Ab4', 'Bb4', 'C5'],
-    d: ['D3', 'E3', 'F3', 'G3', 'A3', 'Bb3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'Bb4', 'C4', 'D5']
-  }
-}
-
-var currentScale = scales.minor.c;
+const toneSynths = {
+  "synth": new Synth(),
+  "noise": new Noise()
+};
+console.log(toneSynths);
+const users = []
+const thisUser = new User(randomColor(), synths.noise);
+const state = new State(thisUser, scales.minor.c, users)
 
 let sketch = (p5) => {
     var w;
@@ -56,22 +50,23 @@ let sketch = (p5) => {
             this.color = disabledColor;
 
             // Tell server that user mouse is not clicked on a cell
-            thisUser.setX(-1);
-            thisUser.setY(-1);
+            state.thisUser.setX(-1);
+            state.thisUser.setY(-1);
           } else {
             if (prevCell != currentCell) {
               // If mouse is held and moved to a new cell
-              synth.start(currentScale[currentCell.x], intervals[currentCell.y]);
+              toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
+              console.log(toneSynths[state.thisUser.synth]);
             }
 
             // Mouse held on cell, set its color and update user position
-            this.color = thisUser.color;
-            thisUser.setX(this.x);
-            thisUser.setY(this.y);
+            this.color = state.thisUser.color;
+            state.thisUser.setX(this.x);
+            state.thisUser.setY(this.y);
 
             // Send updated user position to socket
           }
-          sendSocketUpdate(thisUser);
+          sendSocketUpdate(state.thisUser);
         } else {
           this.color = 255;
         }
@@ -113,26 +108,26 @@ let sketch = (p5) => {
       // DRAW TEXT
       for (var i = 0; i < columns; i++) {
         p5.fill(0);
-        p5.text(currentScale[i], (i * w) + w / 2, rows * (w + 2));
+        p5.text(state.scale[i], (i * w) + w / 2, rows * (w + 2));
       }
     }
 
     function fillCurrentCell() {
       currentCell.color = 0;
       mouseLocked = true;
-      synth.start(currentScale[currentCell.x], intervals[currentCell.y]);
+      toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
     }
 
     function unfillCurrentCell() {
       mouseLocked = false;
       currentCell.color = disabledColor;
-      synth.stop();
+      toneSynths[state.thisUser.synth].stop();
     }
 
 }
 const P5 = new p5(sketch);
 
-subscribe((err, userState) => {
+subscribe((err, userId, userState) => {
   var messageDiv = document.getElementById('message');
   messageDiv.innerHTML = `${userState.color} ${userState.synth} ${userState.x} ${userState.y}`;
-}, thisUser);
+}, state.thisUser);

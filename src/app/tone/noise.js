@@ -6,8 +6,8 @@ import {Synth} from './synth';
 export class Noise extends Synth {
 
   constructor() {
-    super();
-    const gain = new Tone.Gain(0.5).toMaster();
+    super(true);
+    // const gain = new Tone.Gain(0.5).toMaster();
     var noiseSynth = new Tone.MetalSynth();
     let synthJSON =  {
     	"frequency"  : 45 ,
@@ -38,8 +38,9 @@ export class Noise extends Synth {
     noiseSynth.set(synthJSON);
     noiseSynth.connect(this.chorus);
     this.chorus.connect(Tone.Master);
-    this.synth = noiseSynth.connect(gain);
+    this.synth = noiseSynth.toMaster();
 
+    self = this;
     this.repeatCallback = function(time){
       let decay = (self.parameter + 0.1) * 0.2;
       self.synth.set("envelope.decay", decay);
