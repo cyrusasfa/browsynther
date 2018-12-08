@@ -1,23 +1,29 @@
 import * as p5 from "p5/lib/p5.min"
-import Tone from 'tone';
-var randomColor = require('randomcolor'); // import the script
 import './css/style.css';
-
-import {scales, intervals, synths} from './config';
+import { Synth, Noise } from './tone';
+import { subscribe, sendSocketUpdate } from './api/subscribe';
+import Tone from 'tone';
 import {User} from './state';
 
-import { subscribe, sendSocketUpdate } from './api/subscribe';
-import { Synth, Noise } from './tone';
+var randomColor = require('randomcolor'); // import the script
 
 const transport = Tone.Transport;
 Tone.Transport.bpm.value = 120;
 Tone.Transport.start();
 
+const synths = {synth: "synth"}
 const synth =  new Synth();
 
 const thisUser = new User(randomColor(), "synth");
 
-var clients = [];
+const intervals = ['1n', '2n', '4n', '8n', '8t', '16n', '32n', '64n'];
+
+const scales = {
+  minor: {
+    c: ['C3', 'D3', 'Eb3', 'F3', 'G3', 'Ab3', 'Bb3', 'C4', 'D4', 'Eb4', 'F4', 'G4', 'Ab4', 'Bb4', 'C5'],
+    d: ['D3', 'E3', 'F3', 'G3', 'A3', 'Bb3', 'C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'Bb4', 'C4', 'D5']
+  }
+}
 
 var currentScale = scales.minor.c;
 
@@ -55,7 +61,7 @@ let sketch = (p5) => {
           } else {
             if (prevCell != currentCell) {
               // If mouse is held and moved to a new cell
-              synth.start(currentScale[currentCell.x], intervals[currentCell.y], currentCell.x);
+              synth.start(currentScale[currentCell.x], intervals[currentCell.y]);
             }
 
             // Mouse held on cell, set its color and update user position
@@ -114,7 +120,7 @@ let sketch = (p5) => {
     function fillCurrentCell() {
       currentCell.color = 0;
       mouseLocked = true;
-      synth.start(currentScale[currentCell.x], intervals[currentCell.y], currentCell.x);
+      synth.start(currentScale[currentCell.x], intervals[currentCell.y]);
     }
 
     function unfillCurrentCell() {
@@ -126,8 +132,7 @@ let sketch = (p5) => {
 }
 const P5 = new p5(sketch);
 
-subscribe((err, userId, userState) => {
-  // Add behaviour to update received clients state in list
+subscribe((err, userState) => {
   var messageDiv = document.getElementById('message');
-  messageDiv.innerHTML = `${userId} ${userState.color} ${userState.synth} ${userState.x} ${userState.y}`;
+  messageDiv.innerHTML = `${userState.color} ${userState.synth} ${userState.x} ${userState.y}`;
 }, thisUser);
