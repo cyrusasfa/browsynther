@@ -45,17 +45,15 @@ export class Synth {
 
     self = this;
     this.repeatCallback = function(time) {
-      let note = self.parameter;
-    	self.synth.triggerAttackRelease(note, '16n');
+    	self.synth.triggerAttackRelease(self.note, '16n');
     };
     this.eventId = -1;
   }
 
-  start(parameter, interval) {
+  start(note, interval, parameter) {
     this.stop();
-
+    this.note = note;
     this.parameter = parameter;
-
     this.eventId = Tone.Transport.scheduleRepeat(this.repeatCallback, interval);
   }
 

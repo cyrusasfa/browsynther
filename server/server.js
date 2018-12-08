@@ -20,14 +20,19 @@ app.use(require('webpack-hot-middleware')(compiler));
 
 app.use(express.static(path.join(__dirname, '../src/public')));
 
+var clients = [];
+
 io.on('connection', function(client) {
   console.log('a user connected');
   console.log(client.id);
+  clients.push(client);
 
-  client.on('subscribe', (userState) => {
-    console.log('client is subscribing to with attributes', userState);
+  client.on('update', (userState) => {
+    console.log('client is updating with attributes', userState);
     client.state = userState;
-    client.emit('timer', client.state);
+    for (let c of clients) {
+      c.emit('userUpdate', client.id, client.state);
+    }
   });
 
   client.on("message-from-browser", function (obj) {
@@ -37,6 +42,7 @@ io.on('connection', function(client) {
 
   client.on('disconnect', () => {
     console.log('user disconnected')
+    clients.splice(clients.indexOf(client), 1);
   });
 });
 
