@@ -49,26 +49,20 @@ let sketch = (p5) => {
           if (!mouseLocked)  {
             this.color = disabledColor;
             // Tell server that user mouse is not clicked on a cell
-            // state.thisUser.setX(-1);
-            // state.thisUser.setY(-1);
             state.thisUser.setIsOn(false);
           } else {
-            this.color = state.thisUser.color;
-            if (!_.isEqual({...this}, prevCell)) {
-              // If mouse is held and moved to a new cell
-              toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
-              // state.thisUser.setHasMoved(true);
-            }
-            // else {
-            //   state.thisUser.setHasMoved(false);
-            // }
-            state.thisUser.setHasMoved(!_.isEqual({...this}, prevCell));
-
             // Mouse held on cell, set its color and update user position
-            // state.thisUser.setHasMoved(prevCell != this);
+
+            this.color = state.thisUser.color;
             state.thisUser.setX(this.x);
             state.thisUser.setY(this.y);
-            state.thisUser.setIsOn(true);
+            state.thisUser.setIsOn(true); // Tell server user instrument is on
+            if (!_.isEqual({...this}, prevCell)) {
+              // If mouse is held and moved to a new cell restart the instrument
+              toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
+            }
+            // Tell server if the user has moved cell
+            state.thisUser.setHasMoved(!_.isEqual({...this}, prevCell));
 
             // Send updated user position to socket
             sendSocketUpdate(state.thisUser);
@@ -80,8 +74,6 @@ let sketch = (p5) => {
 
       setUserOn(user) {
         this.color = user.color;
-        // user.synth
-        // this.x
       }
     }
 
