@@ -2,7 +2,8 @@ export default class User {
   constructor(color, synth, isOn) {
     this.color = color;
     this.synth = synth;
-    this.isOn = isOn
+    this.isOn = isOn;
+    this.hasMoved = true;
   }
 
   setX(x) {
@@ -18,10 +19,14 @@ export default class User {
   }
 
   isOn() {
-    return this.isOn
+    return this.isOn;
   }
 
   setIsOn(isOn) {
     this.isOn = isOn;
+  }
+
+  setHasMoved(hasMoved) {
+    this.hasMoved = hasMoved;
   }
 }

@@ -57,10 +57,12 @@ export class Synth {
     this.note = note;
     this.parameter = parameter;
     this.eventId = Tone.Transport.scheduleRepeat(this.repeatCallback, interval);
+    // this.isOn = true;
   }
 
   stop() {
     Tone.Transport.clear(this.eventId);
+    // this.isOn = false;
   }
 
   // define deep dispose function

@@ -65,12 +65,17 @@ let sketch = (p5) => {
             state.thisUser.setIsOn(true);
 
             // Send updated user position to socket
-
             sendSocketUpdate(state.thisUser);
           }
         } else {
           this.color = 255;
         }
+      }
+
+      setUserOn(user) {
+        this.color = user.color;
+        // user.synth
+        // this.x
       }
     }
 
@@ -106,6 +111,17 @@ let sketch = (p5) => {
         }
       }
 
+      Object.values(state.users).filter(user => user.isOn).forEach(user => {
+        grid[user.x][user.y].setUserOn(user);
+        if (user.hasMoved) {
+          toneSynths[user.synth].start(state.scale[user.x], intervals[user.y], user.x);
+        }
+      });
+
+      Object.values(state.users).filter(user => !user.isOn).forEach(user => {
+        toneSynths[user.synth].stop();
+      });
+
       // DRAW TEXT
       for (var i = 0; i < columns; i++) {
         p5.fill(0);
@@ -132,16 +148,14 @@ const P5 = new p5(sketch);
 
 // TODO: EXPORT THESE FROM AN EXTERNAL
 // Callback when socket notifies that there is a new user connected
-let registerNewUser = (err, userId, userState) => {
+let userUpdate = (err, userId, userState) => {
   state.users[userId] = userState;
-  console.log(state.users);
   if (userState.x != -1) {console.log(state.users[userId])};
 };
 
 // Remove a user from the list of clients when they disconnect from the socket.
 let removeUser = (err, userId) => {
   delete state.users[userId];
-  console.log(state.users);
 };
 // Subscribe to socket and pass message callback functions and this user info
-subscribe(registerNewUser, removeUser, state.thisUser);
+subscribe(userUpdate, removeUser, state.thisUser);
