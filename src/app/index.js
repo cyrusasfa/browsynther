@@ -6,7 +6,7 @@ import { subscribe, sendSocketUpdate } from './api/subscribe';
 import Tone from 'tone';
 import {State, User} from './state';
 
-var randomColor = require('randomcolor'); // import the script
+var randomColor = require('randomcolor');
 
 const transport = Tone.Transport;
 Tone.Transport.bpm.value = 120;
@@ -16,8 +16,8 @@ const toneSynths = {
   "synth": new Synth(),
   "noise": new Noise()
 };
-const users = []
-const thisUser = new User(randomColor(), synths.synth);
+let users = []
+let thisUser = new User(randomColor(), synths.synth, false);
 const state = new State(thisUser, scales.minor.c, users)
 
 let sketch = (p5) => {
@@ -51,6 +51,7 @@ let sketch = (p5) => {
             // Tell server that user mouse is not clicked on a cell
             state.thisUser.setX(-1);
             state.thisUser.setY(-1);
+            state.thisUser.setIsOn(false);
           } else {
             if (prevCell != currentCell) {
               // If mouse is held and moved to a new cell
@@ -61,8 +62,10 @@ let sketch = (p5) => {
             this.color = state.thisUser.color;
             state.thisUser.setX(this.x);
             state.thisUser.setY(this.y);
+            state.thisUser.setIsOn(true);
 
             // Send updated user position to socket
+
             sendSocketUpdate(state.thisUser);
           }
         } else {
@@ -120,6 +123,8 @@ let sketch = (p5) => {
       mouseLocked = false;
       currentCell.color = disabledColor;
       toneSynths[state.thisUser.synth].stop();
+      state.thisUser.setIsOn(false);
+      sendSocketUpdate(state.thisUser);
     }
 
 }
@@ -128,15 +133,15 @@ const P5 = new p5(sketch);
 // TODO: EXPORT THESE FROM AN EXTERNAL
 // Callback when socket notifies that there is a new user connected
 let registerNewUser = (err, userId, userState) => {
-  users[userId] = userState;
-  console.log(users);
-  if (userState.x != -1) {console.log(users[userId])};
+  state.users[userId] = userState;
+  console.log(state.users);
+  if (userState.x != -1) {console.log(state.users[userId])};
 };
 
 // Remove a user from the list of clients when they disconnect from the socket.
 let removeUser = (err, userId) => {
-  delete users[userId];
-  console.log(users);
+  delete state.users[userId];
+  console.log(state.users);
 };
 // Subscribe to socket and pass message callback functions and this user info
 subscribe(registerNewUser, removeUser, state.thisUser);
