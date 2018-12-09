@@ -46,32 +46,27 @@ let sketch = (p5) => {
         let mouseY = p5.mouseY;
         if (mouseX > this.x * w && mouseX < (this.x * w) + w && mouseY > this.y * w && mouseY < (this.y * w) + w) {
           var prevCell = {...currentCell};
-          currentCell = {...this};
           if (!mouseLocked)  {
             this.color = disabledColor;
           } else {
             // Mouse held on cell, set its color and update user position
             this.color = state.thisUser.color;
-            state.thisUser.setX(this.x);
-            state.thisUser.setY(this.y);
-            state.thisUser.setIsOn(true); // Tell server user instrument is on
-
-            if (!_.isEqual({...this}, prevCell)) {
+            let hasMoved = !_.isEqual({...this}, prevCell)
+            if (hasMoved) {
               // If mouse is held and moved to a new cell restart the instrument
-              toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
+              toneSynths[state.thisUser.synth].start(state.scale[this.x], intervals[this.y], this.x);
             }
             // Tell server if the user has moved cell
-            state.thisUser.setHasMoved(!_.isEqual({...this}, prevCell));
-
-            // Send updated user position to socket
-            sendSocketUpdate(state.thisUser);
+            updateThisUserState(this, hasMoved);
           }
+
+          currentCell = {...this};
         } else {
           this.color = emptyColor;
         }
       }
 
-      setUserOn(user) {
+      setUserOnCell(user) {
         this.color = user.color;
       }
     }
@@ -122,6 +117,16 @@ let sketch = (p5) => {
       sendSocketUpdate(state.thisUser);
     }
 
+    function updateThisUserState(cell, hasMoved) {
+      state.thisUser.setX(cell.x);
+      state.thisUser.setY(cell.y);
+      state.thisUser.setIsOn(true); // Tell server user instrument is on
+      state.thisUser.setHasMoved(hasMoved);
+
+      // Send updated user position to socket
+      sendSocketUpdate(state.thisUser);
+    }
+
     function drawGrid() {
       for (var i = 0; i < columns; i++) {
         for (var j = 0; j < rows; j++) {
@@ -144,7 +149,7 @@ let sketch = (p5) => {
       // For each of clients that have instrument on
       Object.values(state.users).filter(user => user.isOn).forEach(user => {
         // Set the grid for the user's position
-        grid[user.x][user.y].setUserOn(user);
+        grid[user.x][user.y].setUserOnCell(user);
         if (user.hasMoved) {
           // If user has just clicked or moved to new cell, restart instrument with new params
           toneSynths[user.synth].start(state.scale[user.x], intervals[user.y], user.x);
