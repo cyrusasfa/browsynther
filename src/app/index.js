@@ -44,7 +44,6 @@ let sketch = (p5) => {
         let mouseY = p5.mouseY;
         if (mouseX > this.x * w && mouseX < (this.x * w) + w && mouseY > this.y * w && mouseY < (this.y * w) + w ) {
           let prevCell = currentCell;
-          currentCell = this;
           if (!mouseLocked)  {
             this.color = disabledColor;
 
@@ -53,20 +52,22 @@ let sketch = (p5) => {
             state.thisUser.setY(-1);
             state.thisUser.setIsOn(false);
           } else {
-            if (prevCell != currentCell) {
+            this.color = state.thisUser.color;
+            if (prevCell != this) {
               // If mouse is held and moved to a new cell
               toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
             }
-
             // Mouse held on cell, set its color and update user position
-            this.color = state.thisUser.color;
             state.thisUser.setX(this.x);
             state.thisUser.setY(this.y);
             state.thisUser.setIsOn(true);
+            state.thisUser.setHasMoved(prevCell != this);
 
             // Send updated user position to socket
             sendSocketUpdate(state.thisUser);
           }
+
+          currentCell = this;
         } else {
           this.color = 255;
         }
@@ -133,6 +134,7 @@ let sketch = (p5) => {
       currentCell.color = 0;
       mouseLocked = true;
       toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
+      state.thisUser.setHasMoved(true);
     }
 
     function unfillCurrentCell() {
