@@ -5,6 +5,7 @@ import {intervals, scales, synths} from './config';
 import { subscribe, sendSocketUpdate } from './api/subscribe';
 import Tone from 'tone';
 import {State, User} from './state';
+import {isEqual} from 'lodash';
 
 var randomColor = require('randomcolor');
 
@@ -43,31 +44,35 @@ let sketch = (p5) => {
         let mouseX = p5.mouseX;
         let mouseY = p5.mouseY;
         if (mouseX > this.x * w && mouseX < (this.x * w) + w && mouseY > this.y * w && mouseY < (this.y * w) + w ) {
-          let prevCell = currentCell;
+          var prevCell = {...currentCell};
+          currentCell = {...this};
           if (!mouseLocked)  {
             this.color = disabledColor;
-
             // Tell server that user mouse is not clicked on a cell
-            state.thisUser.setX(-1);
-            state.thisUser.setY(-1);
+            // state.thisUser.setX(-1);
+            // state.thisUser.setY(-1);
             state.thisUser.setIsOn(false);
           } else {
             this.color = state.thisUser.color;
-            if (prevCell != this) {
+            if (!_.isEqual({...this}, prevCell)) {
               // If mouse is held and moved to a new cell
               toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
+              // state.thisUser.setHasMoved(true);
             }
+            // else {
+            //   state.thisUser.setHasMoved(false);
+            // }
+            state.thisUser.setHasMoved(!_.isEqual({...this}, prevCell));
+
             // Mouse held on cell, set its color and update user position
+            // state.thisUser.setHasMoved(prevCell != this);
             state.thisUser.setX(this.x);
             state.thisUser.setY(this.y);
             state.thisUser.setIsOn(true);
-            state.thisUser.setHasMoved(prevCell != this);
 
             // Send updated user position to socket
             sendSocketUpdate(state.thisUser);
           }
-
-          currentCell = this;
         } else {
           this.color = 255;
         }
@@ -114,6 +119,7 @@ let sketch = (p5) => {
 
       Object.values(state.users).filter(user => user.isOn).forEach(user => {
         grid[user.x][user.y].setUserOn(user);
+        console.log(user)
         if (user.hasMoved) {
           toneSynths[user.synth].start(state.scale[user.x], intervals[user.y], user.x);
         }
@@ -131,7 +137,6 @@ let sketch = (p5) => {
     }
 
     function fillCurrentCell() {
-      currentCell.color = 0;
       mouseLocked = true;
       toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
       state.thisUser.setHasMoved(true);
@@ -152,7 +157,7 @@ const P5 = new p5(sketch);
 // Callback when socket notifies that there is a new user connected
 let userUpdate = (err, userId, userState) => {
   state.users[userId] = userState;
-  if (userState.x != -1) {console.log(state.users[userId])};
+  if (userState.isOn) {console.log(state.users[userId])};
 };
 
 // Remove a user from the list of clients when they disconnect from the socket.
