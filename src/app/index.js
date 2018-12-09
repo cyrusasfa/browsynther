@@ -31,6 +31,7 @@ let sketch = (p5) => {
     var mouseLocked;
 
     const disabledColor = 209;
+    const emptyColor = 255;
 
     class Cell {
       constructor(color, player, x, y) {
@@ -43,20 +44,18 @@ let sketch = (p5) => {
       mouseIsOver() {
         let mouseX = p5.mouseX;
         let mouseY = p5.mouseY;
-        if (mouseX > this.x * w && mouseX < (this.x * w) + w && mouseY > this.y * w && mouseY < (this.y * w) + w ) {
+        if (mouseX > this.x * w && mouseX < (this.x * w) + w && mouseY > this.y * w && mouseY < (this.y * w) + w) {
           var prevCell = {...currentCell};
           currentCell = {...this};
           if (!mouseLocked)  {
             this.color = disabledColor;
-            // Tell server that user mouse is not clicked on a cell
-            state.thisUser.setIsOn(false);
           } else {
             // Mouse held on cell, set its color and update user position
-
             this.color = state.thisUser.color;
             state.thisUser.setX(this.x);
             state.thisUser.setY(this.y);
             state.thisUser.setIsOn(true); // Tell server user instrument is on
+
             if (!_.isEqual({...this}, prevCell)) {
               // If mouse is held and moved to a new cell restart the instrument
               toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
@@ -68,7 +67,7 @@ let sketch = (p5) => {
             sendSocketUpdate(state.thisUser);
           }
         } else {
-          this.color = 255;
+          this.color = emptyColor;
         }
       }
 
@@ -85,6 +84,7 @@ let sketch = (p5) => {
          columns = 15;
          rows = 8;
 
+         // Initialise grid structure
          grid = new Array(columns);
          for (var i = 0; i < columns; i++) {
            grid[i] = new Array(rows);
@@ -99,49 +99,65 @@ let sketch = (p5) => {
      }
 
     p5.draw = () => {
-      p5.background(255);
-      for (var i = 0; i < columns; i++) {
-        for (var j = 0; j < rows; j++) {
-          p5.fill(grid[i][j].color)
-          p5.stroke(209);
-          p5.rect(i*w, j*w, w-1, w-1);
-          grid[i][j].mouseIsOver()
-        }
-      }
+      p5.background(emptyColor);
+      drawGrid();
 
-      Object.values(state.users).filter(user => user.isOn).forEach(user => {
-        grid[user.x][user.y].setUserOn(user);
-        console.log(user)
-        if (user.hasMoved) {
-          toneSynths[user.synth].start(state.scale[user.x], intervals[user.y], user.x);
-        }
-      });
+      handleOnUsers();
+      handleOffUsers();
 
-      Object.values(state.users).filter(user => !user.isOn).forEach(user => {
-        toneSynths[user.synth].stop();
-      });
-
-      // DRAW TEXT
-      for (var i = 0; i < columns; i++) {
-        p5.fill(0);
-        p5.text(state.scale[i], (i * w) + w / 2, rows * (w + 2));
-      }
+      drawText();
     }
 
-    function fillCurrentCell() {
+    function fillCurrentCell() { // mouseClicked
       mouseLocked = true;
       toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
-      state.thisUser.setHasMoved(true);
     }
 
-    function unfillCurrentCell() {
+    function unfillCurrentCell() { // mouseReleased
       mouseLocked = false;
       currentCell.color = disabledColor;
+      // Stop user synth and set user status to off
       toneSynths[state.thisUser.synth].stop();
       state.thisUser.setIsOn(false);
       sendSocketUpdate(state.thisUser);
     }
 
+    function drawGrid() {
+      for (var i = 0; i < columns; i++) {
+        for (var j = 0; j < rows; j++) {
+          p5.fill(grid[i][j].color)
+          p5.stroke(disabledColor);
+          p5.rect(i*w, j*w, w-1, w-1);
+          grid[i][j].mouseIsOver()
+        }
+      }
+    }
+
+    function drawText() {
+      for (var i = 0; i < columns; i++) {
+        p5.fill(0);
+        p5.text(state.scale[i], (i * w) + w / 2, rows * (w + 2)); // current scale letters
+      }
+    }
+
+    function handleOnUsers() {
+      // For each of clients that have instrument on
+      Object.values(state.users).filter(user => user.isOn).forEach(user => {
+        // Set the grid for the user's position
+        grid[user.x][user.y].setUserOn(user);
+        if (user.hasMoved) {
+          // If user has just clicked or moved to new cell, restart instrument with new params
+          toneSynths[user.synth].start(state.scale[user.x], intervals[user.y], user.x);
+        }
+      });
+    }
+
+    function handleOffUsers() {
+      // Stop instruments of clients who do no have mouse clicked
+      Object.values(state.users).filter(user => !user.isOn).forEach(user => {
+        toneSynths[user.synth].stop();
+      });
+    }
 }
 const P5 = new p5(sketch);
 
@@ -149,7 +165,7 @@ const P5 = new p5(sketch);
 // Callback when socket notifies that there is a new user connected
 let userUpdate = (err, userId, userState) => {
   state.users[userId] = userState;
-  if (userState.isOn) {console.log(state.users[userId])};
+  // if (userState.isOn) {console.log(state.users[userId])};
 };
 
 // Remove a user from the list of clients when they disconnect from the socket.
