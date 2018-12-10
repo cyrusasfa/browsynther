@@ -50,8 +50,7 @@ export class AMSynth extends Synth {
 
     let self = this;
     this.repeatCallback = function(time) {
-      // let decay = (self.parameter + 0.1) * 0.08;
-      // self.synth.set("frequency", self.note);
+      self.effect.set("frequency", self.parameter + 1)
       self.synth.triggerAttackRelease(self.note, '1n');
     };
   }
