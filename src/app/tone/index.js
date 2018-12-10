@@ -1,5 +1,6 @@
-import { Synth } from './synth';
-import { Noise } from './noise';
+import { Synth } from './Synth';
+import { Noise } from './Noise';
 import { AMSynth } from './AMSynth';
+import {SynthFactory} from './SynthFactory';
 
-export { Synth, Noise, AMSynth };
+export { Synth, Noise, AMSynth, SynthFactory };

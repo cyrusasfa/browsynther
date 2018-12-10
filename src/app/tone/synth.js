@@ -75,9 +75,13 @@ export class Synth {
           this.effect.dispose();
           this.effect = null;
       }
+      if(this.effect1 != undefined && this.effect1 != null) {
+          this.effect1.dispose();
+          this.effect1 = null;
+      }
       if(this.synth != undefined && this.synth != null) {
-          this.delay.dispose();
-          this.delay = null;
+          this.synth.dispose();
+          this.synth = null;
       }
   }
 }

@@ -1,6 +1,6 @@
 import * as p5 from "p5/lib/p5.min"
 import './css/style.css';
-import { Synth, Noise, AMSynth } from './tone';
+import { Synth, Noise, AMSynth, SynthFactory } from './tone';
 import {intervals, scales, synths} from './config';
 import { subscribe, sendSocketUpdate } from './api/subscribe';
 import Tone from 'tone';
