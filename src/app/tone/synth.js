@@ -56,8 +56,12 @@ export class Synth {
     this.stop();
     this.note = note;
     this.parameter = parameter;
-    this.eventId = Tone.Transport.scheduleRepeat(this.repeatCallback, interval);
+    this.eventId = this.schedule(interval);
     // this.isOn = true;
+  }
+
+  schedule(interval) {
+    return Tone.Transport.scheduleRepeat(this.repeatCallback, interval);
   }
 
   stop() {

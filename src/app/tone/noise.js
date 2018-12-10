@@ -10,40 +10,40 @@ export class Noise extends Synth {
     const gain = new Tone.Gain(0.5).toMaster();
     var noiseSynth = new Tone.MetalSynth();
     let synthJSON =  {
-    	"frequency"  : 45 ,
+    	"frequency"  : 80 ,
     	"envelope"  : {
     		"attack"  : 0.001 ,
-    		"decay"  : 0.2 ,
+    		"decay"  : 0.3 ,
     		"release"  : 0.1
     	},
     	"harmonicity"  : 12 ,
-    	"modulationIndex"  : 40 ,
+    	"modulationIndex"  : 80 ,
     	"resonance"  : 1000 ,
     	"octaves"  : 1.5
     };
 
     //  create effects
-    this.chorus = new Tone.Chorus();
+    this.effect = new Tone.Chorus();
     let chorusJSON = {
     	"frequency": 0.2,
-    	"delayTime": 10,
+    	"delayTime": 0,
     	"type": "sine",
     	"depth": 1,
-    	"feedback": 0.6,
+    	"feedback": 0.3,
     	"spread": 180,
       "wet": 0.6
     };
-    this.chorus.set(chorusJSON);
+    this.effect.set(chorusJSON);
 
     noiseSynth.set(synthJSON);
-    noiseSynth.connect(this.chorus);
-    this.chorus.connect(Tone.Master);
+    noiseSynth.connect(this.effect);
+    this.effect.connect(Tone.Master);
     this.synth = noiseSynth.connect(gain);
 
     let self = this;
     this.repeatCallback = function(time) {
-      let decay = (self.parameter + 0.1) * 0.2;
-      self.synth.set("envelope.decay", decay);
+      // let decay = (self.parameter + 0.1) * 0.08;
+      self.synth.set("frequency", self.note);
       self.synth.triggerAttackRelease('16n');
     };
   }

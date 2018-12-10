@@ -1,6 +1,6 @@
 import * as p5 from "p5/lib/p5.min"
 import './css/style.css';
-import { Synth, Noise } from './tone';
+import { Synth, Noise, AMSynth } from './tone';
 import {intervals, scales, synths} from './config';
 import { subscribe, sendSocketUpdate } from './api/subscribe';
 import Tone from 'tone';
@@ -15,11 +15,14 @@ Tone.Transport.start();
 
 const toneSynths = {
   "synth": new Synth(),
-  "noise": new Noise()
+  "noise": new Noise(),
+  "am": new AMSynth()
 };
 let users = []
-let thisUser = new User(randomColor(), synths.synth, false);
-const state = new State(thisUser, scales.minor.c, users)
+let thisUser = new User(randomColor(), synths.am, false);
+const state = new State(thisUser, scales.minor.c, users);
+
+// User Synths
 
 let sketch = (p5) => {
     var w;
@@ -54,7 +57,7 @@ let sketch = (p5) => {
             let hasMoved = !_.isEqual({...this}, prevCell)
             if (hasMoved) {
               // If mouse is held and moved to a new cell restart the instrument
-              toneSynths[state.thisUser.synth].start(state.scale[this.x], intervals[this.y], this.x);
+              toneSynths[state.thisUser.synth].start(state.scale[this.x], intervals[this.y], this.y);
             }
             // Tell server if the user has moved cell
             updateThisUserState(this, hasMoved);
@@ -105,7 +108,7 @@ let sketch = (p5) => {
 
     function fillCurrentCell() { // mouseClicked
       mouseLocked = true;
-      toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.x);
+      toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.y);
     }
 
     function unfillCurrentCell() { // mouseReleased
