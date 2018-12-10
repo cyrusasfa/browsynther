@@ -20,7 +20,7 @@ const toneSynths = {
 };
 let users = []
 let thisUser = new User(randomColor(), synths.am, false);
-const state = new State(thisUser, scales.minor.c, users);
+const state = new State(thisUser, scales.minor.f, users);
 
 // User Synths
 
