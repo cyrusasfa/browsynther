@@ -16,7 +16,7 @@ export class AMSynth extends Synth {
         },
         "envelope": {
             "attack": 0.2,
-            "decay": 0.3,
+            "decay": 1,
             "sustain": 0.8,
             "release": 0.3
         },
@@ -26,8 +26,8 @@ export class AMSynth extends Synth {
         },
         "modulationEnvelope" : {
             "attack": 0.2,
-            "decay": 1.5,
-            "sustain": 0.8,
+            "decay": 0.5,
+            "sustain": 0.7,
             "release": 0.2
         }
     };
@@ -65,8 +65,8 @@ export class AMSynth extends Synth {
 
     let self = this;
     this.repeatCallback = function(time) {
-      self.effect.set("frequency", self.parameter + 1)
-      self.synth.triggerAttackRelease(self.note, '1n');
+      self.effect.set("frequency", self.parameter + 1);
+      self.synth.triggerAttackRelease(self.note, '2n');
     };
   }
 

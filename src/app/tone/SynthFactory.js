@@ -3,7 +3,7 @@ import { Synth, Noise, AMSynth } from './';
 export class SynthFactory {
 
   getSynth(synthType) {
-    if (shapeType == null) {
+    if (synthType == null) {
       return null;
     }
     if (synthType == "synth") {

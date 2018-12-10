@@ -1,8 +1,9 @@
 import Tone from 'tone';
 
 export default class State {
-  constructor(thisUser, scale, users) {
+  constructor(thisUser, thisUserSynth, scale, users) {
     this.thisUser = thisUser;
+    this.thisUserSynth = thisUserSynth;
     this.scale = scale;
 
     this.users = users;
@@ -14,6 +15,10 @@ export default class State {
 
   setScale(scale) {
     this.scale = scale;
+  }
+
+  setThisUserSynth(synth) {
+    this.thisUserSynth = synth;
   }
 
   updateUser() {

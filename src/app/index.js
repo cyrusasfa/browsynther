@@ -1,7 +1,7 @@
 import * as p5 from "p5/lib/p5.min"
 import './css/style.css';
 import { Synth, Noise, AMSynth, SynthFactory } from './tone';
-import {intervals, scales, synths} from './config';
+import {intervals, scales, synthTypes} from './config';
 import { subscribe, sendSocketUpdate } from './api/subscribe';
 import Tone from 'tone';
 import {State, User} from './state';
@@ -13,14 +13,17 @@ const transport = Tone.Transport;
 Tone.Transport.bpm.value = 120;
 Tone.Transport.start();
 
+const synthFactory = new SynthFactory();
 const toneSynths = {
   "synth": new Synth(),
   "noise": new Noise(),
   "am": new AMSynth()
 };
 let users = []
-let thisUser = new User(randomColor(), synths.am, false);
-const state = new State(thisUser, scales.minor.f, users);
+// user Synths;
+// this user synth;
+let thisUser = new User(randomColor(), synthTypes.am, false);
+const state = new State(thisUser, synthFactory.getSynth(synthTypes.am), scales.minor.f, users);
 
 // User Synths
 
@@ -57,7 +60,7 @@ let sketch = (p5) => {
             let hasMoved = !_.isEqual({...this}, prevCell)
             if (hasMoved) {
               // If mouse is held and moved to a new cell restart the instrument
-              toneSynths[state.thisUser.synth].start(state.scale[this.x], intervals[this.y], this.y);
+              state.thisUserSynth.start(state.scale[this.x], intervals[this.y], this.y);
             }
             // Tell server if the user has moved cell
             updateThisUserState(this, hasMoved);
@@ -108,14 +111,14 @@ let sketch = (p5) => {
 
     function fillCurrentCell() { // mouseClicked
       mouseLocked = true;
-      toneSynths[state.thisUser.synth].start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.y);
+      state.thisUserSynth.start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.y);
     }
 
     function unfillCurrentCell() { // mouseReleased
       mouseLocked = false;
       currentCell.color = disabledColor;
       // Stop user synth and set user status to off
-      toneSynths[state.thisUser.synth].stop();
+      tstate.thisUserSynth.stop();
       state.thisUser.setIsOn(false);
       sendSocketUpdate(state.thisUser);
     }
@@ -173,6 +176,7 @@ const P5 = new p5(sketch);
 // Callback when socket notifies that there is a new user connected
 let userUpdate = (err, userId, userState) => {
   state.users[userId] = userState;
+  // if (userState.hasChangedSynth) 
   // if (userState.isOn) {console.log(state.users[userId])};
 };
 

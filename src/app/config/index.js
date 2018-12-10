@@ -12,6 +12,6 @@ const scales = {
   }
 }
 
-const synths = {synth: "synth", noise: "noise", am: "am"};
+const synthTypes = {synth: "synth", noise: "noise", am: "am"};
 
-export {scales, intervals, synths}
+export {scales, intervals, synthTypes}
