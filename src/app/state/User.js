@@ -4,6 +4,7 @@ export default class User {
     this.synth = synth;
     this.isOn = isOn;
     this.hasMoved = true;
+    this.hasChangedSynth = false;
   }
 
   setX(x) {
@@ -28,5 +29,9 @@ export default class User {
 
   setHasMoved(hasMoved) {
     this.hasMoved = hasMoved;
+  }
+
+  setHasChangedSynth(hasChangedSynth) {
+    this.hasChangedSynth = hasChangedSynth;
   }
 }

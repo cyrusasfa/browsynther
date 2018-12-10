@@ -1,12 +1,13 @@
 import Tone from 'tone';
 
 export default class State {
-  constructor(thisUser, thisUserSynth, scale, users) {
+  constructor(thisUser, thisUserSynth, scale) {
     this.thisUser = thisUser;
     this.thisUserSynth = thisUserSynth;
     this.scale = scale;
 
-    this.users = users;
+    this.users = [];
+    // this.users = users;
   }
 
   setBPM(bpm) {

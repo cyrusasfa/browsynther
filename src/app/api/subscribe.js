@@ -10,6 +10,7 @@ function subscribe(userUpdate, removeUser, user) {
     removeUser(null, userId)
   });
   socket.emit('update', user);
+  user.setHasChangedSynth(false);
 }
 
 function sendSocketUpdate(userState) {

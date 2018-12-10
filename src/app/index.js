@@ -14,18 +14,9 @@ Tone.Transport.bpm.value = 120;
 Tone.Transport.start();
 
 const synthFactory = new SynthFactory();
-const toneSynths = {
-  "synth": new Synth(),
-  "noise": new Noise(),
-  "am": new AMSynth()
-};
-let users = []
-// user Synths;
 // this user synth;
-let thisUser = new User(randomColor(), synthTypes.am, false);
-const state = new State(thisUser, synthFactory.getSynth(synthTypes.am), scales.minor.f, users);
-
-// User Synths
+let thisUser = new User(randomColor(), synthTypes.synth, false);
+const state = new State(thisUser, synthFactory.getSynth(synthTypes.synth), scales.minor.f);
 
 let sketch = (p5) => {
     var w;
@@ -118,7 +109,7 @@ let sketch = (p5) => {
       mouseLocked = false;
       currentCell.color = disabledColor;
       // Stop user synth and set user status to off
-      tstate.thisUserSynth.stop();
+      state.thisUserSynth.stop();
       state.thisUser.setIsOn(false);
       sendSocketUpdate(state.thisUser);
     }
@@ -149,40 +140,59 @@ let sketch = (p5) => {
         p5.fill(0);
         p5.text(state.scale[i], (i * w) + w / 2, rows * (w + 2)); // current scale letters
       }
+      for (var j = 0; j < rows; j++) {
+        p5.fill(0);
+        p5.text(j + 1, columns * (w + 1), (j * w) + w / 2); // current scale letters
+      }
     }
 
     function handleOnUsers() {
       // For each of clients that have instrument on
-      Object.values(state.users).filter(user => user.isOn).forEach(user => {
+      Object.values(state.users).filter(user => user.userState.isOn).forEach(user => {
         // Set the grid for the user's position
-        grid[user.x][user.y].setUserOnCell(user);
-        if (user.hasMoved) {
+        grid[user.userState.x][user.userState.y].setUserOnCell(user.userState);
+        if (user.userState.hasMoved) {
           // If user has just clicked or moved to new cell, restart instrument with new params
-          toneSynths[user.synth].start(state.scale[user.x], intervals[user.y], user.x);
+          user.userSynth.start(state.scale[user.userState.x], intervals[user.userState.y], user.userState.x);
         }
       });
     }
 
     function handleOffUsers() {
       // Stop instruments of clients who do no have mouse clicked
-      Object.values(state.users).filter(user => !user.isOn).forEach(user => {
-        toneSynths[user.synth].stop();
+      Object.values(state.users).filter(user => !user.userState.isOn).forEach(user => {
+        user.userSynth.stop();
       });
     }
 }
 const P5 = new p5(sketch);
 
 // TODO: EXPORT THESE FROM AN EXTERNAL
-// Callback when socket notifies that there is a new user connected
+// Callback when socket notifies that there is a new user connected or state changed
 let userUpdate = (err, userId, userState) => {
-  state.users[userId] = userState;
-  // if (userState.hasChangedSynth) 
-  // if (userState.isOn) {console.log(state.users[userId])};
+  if (state.users[userId] == undefined) {
+    state.users[userId] = {};
+  }
+  state.users[userId] = {...state.users[userId], userState: userState};
+
+  // Init user instrument
+  if (state.users[userId].userSynth == undefined) {
+    state.users[userId] = {...state.users[userId], userSynth: synthFactory.getSynth(userState.synth)};
+  }
+
+  // if user synth has changed kill old one and init new
+  // if (state.users[userId].userSynth != undefined && state.users[userId.userSynth] != null) {
+  //   state.users[userId].userSynth.deep_dispose();
+  // }
 };
 
 // Remove a user from the list of clients when they disconnect from the socket.
 let removeUser = (err, userId) => {
+  if (state.users[userId].userSynth != undefined) {
+    state.users[userId].userSynth.deep_dispose();
+  }
   delete state.users[userId];
+  console.log(state.users[userId]);
 };
 // Subscribe to socket and pass message callback functions and this user info
 subscribe(userUpdate, removeUser, state.thisUser);

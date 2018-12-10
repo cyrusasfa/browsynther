@@ -1,6 +1,6 @@
 import Tone from 'tone';
 
-import {Synth} from './synth';
+import {Synth} from './Synth';
 
 'use strict'
 export class Noise extends Synth {
