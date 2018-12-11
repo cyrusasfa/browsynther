@@ -130,7 +130,6 @@ let sketch = (p5) => {
       handleOnUsers();
       handleOffUsers();
 
-
       drawText();
     }
 
@@ -142,7 +141,7 @@ let sketch = (p5) => {
           buttons.filter(b => b.y != buttons[i].y).forEach(b => {
             b.setColor(disabledColor);
           });
-          handleSynthChanged(Object.keys(synthTypes)[i])
+          handleSynthChanged(Object.values(synthTypes)[i])
         }
       }
     }
