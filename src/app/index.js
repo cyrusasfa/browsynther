@@ -220,7 +220,6 @@ let sketch = (p5) => {
 }
 const P5 = new p5(sketch);
 
-// TODO: EXPORT THESE FROM AN EXTERNAL
 // Callback when socket notifies that there is a new user connected or state changed
 let userUpdate = (err, userId, userState) => {
   let prevSynth;
@@ -237,14 +236,11 @@ let userUpdate = (err, userId, userState) => {
     state.users[userId] = {...state.users[userId], userSynth: synthFactory.getSynth(userState.synth)};
   }
 
+  // if user synth has changed kill old one and init new
   if (prevSynth != userState.synth && prevSynth != undefined) {
     state.users[userId].userSynth.deep_dispose();
     state.users[userId] = {...state.users[userId], userSynth: synthFactory.getSynth(userState.synth)};
   }
-  // if user synth has changed kill old one and init new
-  // if (state.users[userId].userSynth != undefined && state.users[userId.userSynth] != null) {
-  //   state.users[userId].userSynth.deep_dispose();
-  // }
 };
 
 // Remove a user from the list of clients when they disconnect from the socket.
