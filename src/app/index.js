@@ -113,6 +113,9 @@ let sketch = (p5) => {
          let numSynths = Object.keys(synthTypes).length;
          for (var i = 0; i < numSynths; i++) {
            buttons[i] = new Button(Object.values(synthTypes)[i], columns * (w + 3), (i * w) + w / 2, w * 2, w / 2);
+           if (buttons[i].text == thisUser.synth) {
+             buttons[i].color = thisUser.color;
+           }
          }
 
          p5.textAlign(p5.CENTER);
