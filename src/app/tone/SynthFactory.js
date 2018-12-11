@@ -6,11 +6,11 @@ export class SynthFactory {
     if (synthType == null) {
       return null;
     }
-    if (synthType == "synth") {
+    if (synthType == "FM") {
        return new Synth();
-    } else if (synthType == "noise") {
+    } else if (synthType == "NOISE") {
        return new Noise();
-    } else if (synthType == "am") {
+    } else if (synthType == "AM") {
        return new AMSynth();
     }
     return null;
