@@ -19,14 +19,7 @@ export default class State {
   }
 
   setThisUserSynth(synth) {
+    this.thisUserSynth.deep_dispose();
     this.thisUserSynth = synth;
-  }
-
-  updateUser() {
-
-  }
-
-  addUser() {
-
   }
 }

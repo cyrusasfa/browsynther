@@ -26,6 +26,7 @@ let sketch = (p5) => {
     var next;
     var currentCell;
     var mouseLocked;
+    var buttons = [];
 
     const disabledColor = 209;
     const emptyColor = 255;
@@ -68,8 +69,29 @@ let sketch = (p5) => {
       }
     }
 
+    class Button {
+      constructor(text, x, y, w, h) {
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h
+        this.color = disabledColor;
+      }
+
+      mouseIsOver() {
+        let mouseX = p5.mouseX;
+        let mouseY = p5.mouseY;
+        return mouseX > this.x && mouseX < this.x + this.w && mouseY > this.y && mouseY < this.y + this.h;
+      }
+
+      setColor(color) {
+        this.color = color;
+      }
+    }
+
      p5.setup = () => {
-         var cnv = p5.createCanvas(850, 420);
+         var cnv = p5.createCanvas(1000, 420);
          cnv.mousePressed(fillCurrentCell);
          cnv.mouseReleased(unfillCurrentCell);
          w = 50;
@@ -87,6 +109,12 @@ let sketch = (p5) => {
            }
          }
 
+         // Init buttons
+         let numSynths = Object.keys(synthTypes).length;
+         for (var i = 0; i < numSynths; i++) {
+           buttons[i] = new Button(Object.values(synthTypes)[i], columns * (w + 3), (i * w) + w / 2, w * 2, w / 2);
+         }
+
          p5.textAlign(p5.CENTER);
      }
 
@@ -94,15 +122,26 @@ let sketch = (p5) => {
       p5.background(emptyColor);
       drawGrid();
 
+      drawButtons();
+
       handleOnUsers();
       handleOffUsers();
+
 
       drawText();
     }
 
     function fillCurrentCell() { // mouseClicked
       mouseLocked = true;
-      state.thisUserSynth.start(state.scale[currentCell.x], intervals[currentCell.y], currentCell.y);
+      for (var i = 0; i < buttons.length; i++) {
+        if (buttons[i].mouseIsOver()) {
+          buttons[i].setColor(thisUser.color);
+          buttons.filter(b => b.y != buttons[i].y).forEach(b => {
+            b.setColor(disabledColor);
+          });
+          handleSynthChanged(Object.keys(synthTypes)[i])
+        }
+      }
     }
 
     function unfillCurrentCell() { // mouseReleased
@@ -135,6 +174,13 @@ let sketch = (p5) => {
       }
     }
 
+    function drawButtons() {
+      for (var i = 0; i < buttons.length; i++) {
+        p5.fill(buttons[i].color);
+        p5.text(buttons[i].text, buttons[i].x, buttons[i].y, buttons[i].w, buttons[i].h);
+      }
+    }
+
     function drawText() {
       for (var i = 0; i < columns; i++) {
         p5.fill(0);
@@ -142,7 +188,7 @@ let sketch = (p5) => {
       }
       for (var j = 0; j < rows; j++) {
         p5.fill(0);
-        p5.text(j + 1, columns * (w + 1), (j * w) + w / 2); // current scale letters
+        p5.text(j + 1, columns * (w + 1), (j * w) + w / 2); // y axis values letters
       }
     }
 
@@ -164,14 +210,23 @@ let sketch = (p5) => {
         user.userSynth.stop();
       });
     }
+
+    function handleSynthChanged(synth) {
+      thisUser.setSynth(synth);
+      state.setThisUserSynth(synthFactory.getSynth(synth))
+    }
 }
 const P5 = new p5(sketch);
 
 // TODO: EXPORT THESE FROM AN EXTERNAL
 // Callback when socket notifies that there is a new user connected or state changed
 let userUpdate = (err, userId, userState) => {
+  let prevSynth;
   if (state.users[userId] == undefined) {
     state.users[userId] = {};
+    prevSynth == undefined;
+  } else {
+    prevSynth = state.users[userId].userState.synth;
   }
   state.users[userId] = {...state.users[userId], userState: userState};
 
@@ -180,6 +235,10 @@ let userUpdate = (err, userId, userState) => {
     state.users[userId] = {...state.users[userId], userSynth: synthFactory.getSynth(userState.synth)};
   }
 
+  if (prevSynth != userState.synth && prevSynth != undefined) {
+    state.users[userId].userSynth.deep_dispose();
+    state.users[userId] = {...state.users[userId], userSynth: synthFactory.getSynth(userState.synth)};
+  }
   // if user synth has changed kill old one and init new
   // if (state.users[userId].userSynth != undefined && state.users[userId.userSynth] != null) {
   //   state.users[userId].userSynth.deep_dispose();
@@ -192,7 +251,6 @@ let removeUser = (err, userId) => {
     state.users[userId].userSynth.deep_dispose();
   }
   delete state.users[userId];
-  console.log(state.users[userId]);
 };
 // Subscribe to socket and pass message callback functions and this user info
 subscribe(userUpdate, removeUser, state.thisUser);
